@@ -1,34 +1,52 @@
-google.charts.load('current', {packages: ['corechart', 'line']});
-google.charts.setOnLoadCallback(loadData);
+var graph_name = 'day';
+var is_curved = false;
 
-function loadData() {
-	requirejs(['./data1.js'], function(data1) {
-		drawBasic(data1.rows);
+google.charts.load('current', {packages: ['corechart', 'line']});
+google.charts.setOnLoadCallback(function() {loadData(graph_name, is_curved)});
+
+function loadData(name, curved) {
+	requirejs(['./' + name + '.js'], function(data) {
+		drawBasic(name, data.rows, curved);
 	});
 }
 
-function drawBasic(rows) {
+function drawBasic(name, rows, curved) {
 
       var data = new google.visualization.DataTable();
-      data.addColumn('number', 'X');
-      data.addColumn('number', 'Dogs');
+      data.addColumn('date', 'X');
+      data.addColumn('number', 'New tickets per ' + name);
 	  
       data.addRows(rows);
 
       var options = {
+        height: 275,
         hAxis: {
-          title: 'Time'
+          title: 'Date (2018 / 2019)',
+          format: 'MMM dd'
         },
-        vAxis: {
-          title: 'Popularity'
+        explorer: { 
+            actions: ['dragToZoom', 'rightClickToReset'],
+            axis: 'horizontal',
+            keepInBounds: true,
+            maxZoomIn: 4.0
         }
       };
+      if(curved) {
+          options['curveType'] = 'function';
+      }
 
       var chart = new google.visualization.LineChart(document.getElementById('chart-div'));
       chart.draw(data, options);
 }
 
 function onSelectGraph() {
-	var x = document.getElementById("select-graph").value;
-	document.getElementById("demo").innerHTML = "You selected: " + x;
+	var name = document.getElementById("select-graph").value;
+    graph_name = name;
+    loadData(graph_name, is_curved);
 }
+
+function handleClickCurved(cb) {
+    is_curved = cb.checked;
+    loadData(graph_name, is_curved);
+}
+
